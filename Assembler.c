@@ -52,8 +52,6 @@ int main(int argc, char *argv[])
     if (!strcmp(opcode, "add")) { // strcmp return 0 if equal
         /* do whatever you need to do for opcode "add" */
     }
-    fclose(inFilePtr);
-    fclose(outFilePtr);
     return(0);
 }
 

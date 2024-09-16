@@ -32,12 +32,12 @@ int conBi_to_Int(char *a){
     return number; 
 }
 
-int conBi_to_IntReg(char* bi){
+int conBi_to_IntReg(char* bi){ //convert bi to int reg (0 - 7)
     return strtol(bi, NULL, 2);
 }
 
-char* conInt_to_Binary(int num){
-    int bits = 16;  
+char* conInt_to_Binary(int num){ // convert int to 32 bit binary
+    int bits = 32;  
     // Allocate memory for binary (+1 for \0)
     char *binary = (char *)malloc(bits + 1);  
     
@@ -61,6 +61,7 @@ void add(char* destReg,char *regA, char *regB ){
     int B = conBi_to_IntReg(regB);
     if(A > 7 || A < 0 || B > 7 || B < 0){
         printf("input is only 3 bit");
+        return exit(1);
     }
     int dest = conBi_to_IntReg(destReg);
     reg[dest] = reg[A] + reg[B];
@@ -72,6 +73,7 @@ void nand(char* destReg,char *regA, char *regB){
     int B = conBi_to_IntReg(regB);
     if(A > 7 || A < 0 || B > 7 || B < 0){
         printf("input is only 3 bit");
+        return exit(1);
     }
     int dest = conBi_to_IntReg(destReg);
     reg[dest] = ~(reg[A] & reg[B]) & 0xF; // To avoid the higher num and 2 com.
@@ -84,6 +86,7 @@ void jalr(char* regA, char* regB){
     int B = conBi_to_IntReg(regB);
     if(A > 7 || A < 0 || B > 7 || B < 0){
         printf("input is only 3 bit");
+        return exit(1);
     }
     int Next_PC = PC + 1;
     if(reg[A] == reg[B]){
@@ -92,6 +95,21 @@ void jalr(char* regA, char* regB){
     }else{
         reg[B] = Next_PC;
         PC = reg[A];
+    }
+}
+
+void beq(char* regA, char* regB, char* offsetField){
+    int A = conBi_to_IntReg(regA);
+    int B = conBi_to_IntReg(regB);
+    if(A > 7 || A < 0 || B > 7 || B < 0){
+        printf("input is only 3 bit");
+        return exit(1);
+    }
+    if(strlen(offsetField) == 16){
+        offsetField = conInt_to_Binary(conBi_to_Int(offsetField));
+    }
+    if(reg[A] == reg[B]){
+        PC = PC+1+conBi_to_Int(offsetField);
     }
 }
 
@@ -124,7 +142,16 @@ int main() {
     // char* a = "001";  //1
     // char* b = "010";  //2
     // jalr(a,b);
-    // printf("reg[1] : %d, reg[2] (Next PC) : %d, PC : ",reg[1],reg[2],PC);
+    // printf("reg[1] : %d, reg[2] (Next PC) : %d, PC : %d",reg[1],reg[2],PC);
+
+    //beq
+    // reg[1] = 3; //a
+    // reg[2] = 3; //b
+    // char* a = "001";  //1
+    // char* b = "010";  //2
+    // char* offset = conInt_to_Binary(-1000);
+    // beq(a,b,offset);
+    // printf("PC : %d",PC);
 
 
     return 0;
