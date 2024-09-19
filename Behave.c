@@ -2,11 +2,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-int reg[8] = {0};
-
-int PC = 0;
+int reg[8] = {0}; // Register array
+int mem[256] = {0}; // Memory array
+int PC = 0; // Program Counter
+int halted = 0;  // Flag to indicate if the machine is halted
 
 // gcc -o Behave Behave.c 
+int conString_base10_to_Int(char* string){
+    return strtol(string, NULL, 10);
+}
 
 int conBi_to_Int(char *a){
     int number = 0;
@@ -32,62 +36,49 @@ int conBi_to_Int(char *a){
     return number; 
 }
 
-int conBi_to_IntReg(char* bi){ //convert bi to int reg (0 - 7)
-    return strtol(bi, NULL, 2);
+int conBi_to_IntReg(char* bi){ 
+    int result = strtol(bi, NULL, 2);
+    if(result > 7 || result < 0){
+        printf("input is only 3 bit");
+        return -1;
+    }
+    return result;
 }
 
-char* conInt_to_Binary(int num){ // convert int to 32 bit binary
-    int bits = 32;  
+char* conInt_to_Binary(int bits,char* nums){ // convert int to bits bit binary 
+    int num = conString_base10_to_Int(nums);
     // Allocate memory for binary (+1 for \0)
     char *binary = (char *)malloc(bits + 1);  
-    
     if (binary == NULL) {
         return NULL;  // Memory allocation failed
     }
-
     // go from i = 31 to i = 0
     for (int i = bits - 1; i >= 0; i--) {
         int bit = (num >> i) & 1;
         binary[bits - 1 - i] = bit ? '1' : '0';  
     }
-
     binary[bits] = '\0';  
     return binary; 
 }
 
-//add
 void add(char* destReg,char *regA, char *regB ){
     int A = conBi_to_IntReg(regA);
     int B = conBi_to_IntReg(regB);
-    if(A > 7 || A < 0 || B > 7 || B < 0){
-        printf("input is only 3 bit");
-        return exit(1);
-    }
     int dest = conBi_to_IntReg(destReg);
     reg[dest] = reg[A] + reg[B];
 }
 
-//nand
 void nand(char* destReg,char *regA, char *regB){
     int A = conBi_to_IntReg(regA);
     int B = conBi_to_IntReg(regB);
-    if(A > 7 || A < 0 || B > 7 || B < 0){
-        printf("input is only 3 bit");
-        return exit(1);
-    }
     int dest = conBi_to_IntReg(destReg);
     reg[dest] = ~(reg[A] & reg[B]) & 0xF; // To avoid the higher num and 2 com.
     //0xF is 4 bits for 8 is FF, and 16 is FFF 
 }
 
-//jumpr
 void jalr(char* regA, char* regB){
     int A = conBi_to_IntReg(regA);
     int B = conBi_to_IntReg(regB);
-    if(A > 7 || A < 0 || B > 7 || B < 0){
-        printf("input is only 3 bit");
-        return exit(1);
-    }
     int Next_PC = PC + 1;
     if(reg[A] == reg[B]){
         reg[B] = Next_PC;
@@ -101,29 +92,62 @@ void jalr(char* regA, char* regB){
 void beq(char* regA, char* regB, char* offsetField){
     int A = conBi_to_IntReg(regA);
     int B = conBi_to_IntReg(regB);
-    if(A > 7 || A < 0 || B > 7 || B < 0){
-        printf("input is only 3 bit");
-        return exit(1);
-    }
-    if(strlen(offsetField) == 16){
-        offsetField = conInt_to_Binary(conBi_to_Int(offsetField));
+    if(strlen(offsetField) == 17){
+        offsetField = conInt_to_Binary(32,offsetField);
     }
     if(reg[A] == reg[B]){
         PC = PC+1+conBi_to_Int(offsetField);
     }
 }
 
+// lw: Load word from memory into a register
+void lw(char* regA, char* regB, char* offsetField){
+    int A = conBi_to_IntReg(regA); 
+    int B = conBi_to_IntReg(regB);
+    
+    if(strlen(offsetField) == 17){
+        offsetField = conInt_to_Binary(32,offsetField);
+    }
+    
+    int address = reg[A] + conBi_to_Int(offsetField);
+    
+    reg[B] = mem[address];
+}
+
+// sw: Store word from a register into memory
+void sw(char *regA, char *regB, char *offsetField) {
+    int A = conBi_to_IntReg(regA);
+    int B = conBi_to_IntReg(regB);
+
+    if(strlen(offsetField) == 17){
+        offsetField = conInt_to_Binary(32,offsetField);
+    }
+    
+    int address = reg[A] + conBi_to_Int(offsetField);
+    
+    mem[address] = reg[B];
+}
+
+// halt: Set the halted flag and increment PC
+void halt() {
+    PC++;
+    halted = 1;
+}
+
+// no-op: Increment PC without changing other state
+void noop() {
+    PC++;
+}
 
 int main() {
     // printf("%s",conInt_to_Binary(32768));
 
-    //add
+    // add
     // reg[0] = 5;
-    // reg[1] = -1;
-    // //add
-    // char* a = conInt_to_Binary(0);
-    // char* b = conInt_to_Binary(1);
-    // char* c = conInt_to_Binary(0);
+    // reg[1] = -10000;
+    // char* a = conInt_to_Binary(3,"0");
+    // char* b = conInt_to_Binary(3,"1");
+    // char* c = conInt_to_Binary(3,"0");
     // add(c,a,b); // reg[0] = reg[0] - reg[1]
     // printf("%d\n",reg[0]);
 
@@ -136,7 +160,7 @@ int main() {
     // nand(c,a,b);
     // printf("%d\n",reg[1]); 
 
-    //jumpr
+    //jalr
     // reg[1] = 3; //a
     // reg[2] = 3; //b
     // char* a = "001";  //1
@@ -149,9 +173,38 @@ int main() {
     // reg[2] = 3; //b
     // char* a = "001";  //1
     // char* b = "010";  //2
-    // char* offset = conInt_to_Binary(-1000);
+    // char* offset = conInt_to_Binary(16,"-1000");
     // beq(a,b,offset);
     // printf("PC : %d",PC);
+
+    // Initialize memory values for testing 'lw' and 'sw'
+    // mem[10] = 42;
+    // mem[14] = 99;
+
+    // lw
+    // reg[1] = 10;
+    // char* a = "001"; // reg[1]
+    // char* b = "010"; // reg[2]
+    // char* offset = conInt_to_Binary(4);
+    // lw(a, b, offset); 
+    // printf("reg[2]: %d", reg[2]); // reg[2]: 99
+
+    // sw
+    // reg[1] = 40;
+    // reg[2] = 20;
+    // char* a = "001"; // reg[1]
+    // char* b = "010"; // reg[2]
+    // char* offset = conInt_to_Binary(0);
+    // sw(a, b, offset);
+    // printf("mem[40]: %d", mem[40]); // mem[40]: 20
+
+    // halt
+    // halt();
+    // printf("PC: %d, halted: %d", PC, halted); // PC: 1, halted: 1
+
+    // no-op
+    // noop();
+    // printf("PC: %d", PC); // PC: 1
 
 
     return 0;

@@ -35,8 +35,7 @@ int main(int argc, char *argv[])
     }
 
     /* read in the entire machine-code file into memory */
-    for (state.numMemory = 0; fgets(line, MAXLINELENGTH, filePtr) != NULL;
-	state.numMemory++) {
+    for (state.numMemory = 0; fgets(line, MAXLINELENGTH, filePtr) != NULL;state.numMemory++) {
 	if (sscanf(line, "%d", state.mem+state.numMemory) != 1) {
 	    printf("error in reading address %d\n", state.numMemory);
 	    exit(1);
