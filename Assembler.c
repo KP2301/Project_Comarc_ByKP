@@ -16,7 +16,7 @@ int readAndParse(FILE *, char *, char *, char *, char *, char *);
 int isNumber(char *);
 int mem[65536];
 char* machine[65536] = {0};
-int reg[8] = {0,2,20,0,0,1,0,0};
+int reg[8] = {0,2,20,0,0,0,0,0};
 int PC = 0;
 int target_PC = 0;
 int halted = 0;
@@ -95,15 +95,21 @@ int main(int argc, char *argv[])
             i+=2;
         }
     }
-
-    
+    printf("PC: %d\n", PC);
+    // target_PC = 7;
     // if (target_PC < PC) { // return to the targetline
-    //     fseek(inFilePtr, lineOffsets[target_PC - 1], SEEK_SET); // Move to the start of the desired line
-    //     readAndParse(inFilePtr, label, opcode, arg0, arg1, arg2);
-    //     printf("%s %s %s %s %s\n",label,opcode,arg0,arg1,arg2);
+    //     // Move to the start of the desired line
+    //     fseek(inFilePtr, lineOffsets[target_PC - 1] - 1, SEEK_SET); 
+    //     // readAndParse(inFilePtr, label, opcode, arg0, arg1, arg2);
+    //     // printf("%s %s %s %s %s\n",label,opcode,arg0,arg1,arg2);
     // } else {
     //     printf("Line %d does not exist in the file.\n", target_PC);
     // }
+    // readAndParse(inFilePtr, label, opcode, arg0, arg1, arg2);
+    // printf("%s %s %s %s %s\n",label,opcode,arg0,arg1,arg2);
+    // readAndParse(inFilePtr, label, opcode, arg0, arg1, arg2);
+    // printf("%s %s %s %s %s\n",label,opcode,arg0,arg1,arg2);
+
 
     rewind(inFilePtr);
     readAndParse(inFilePtr, label, opcode, arg0, arg1, arg2);
@@ -120,7 +126,6 @@ int main(int argc, char *argv[])
         }
         rd = conOffset(opcode, rd);
     }
-
             
         if (!strcmp(opcode, "add")) {
             printf("%s, %s, %s \n",rs1,rs2,rd);
