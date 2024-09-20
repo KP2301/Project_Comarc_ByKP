@@ -1,1 +1,2 @@
-        add 1 2 1
+        add 1 2 pos1
+pos1 .fill 1
