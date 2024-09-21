@@ -4,11 +4,6 @@
 #include "Behave.h"
 #include "Global.h"
 
-// int reg[8] = {0}; // Register array
-// int PC = 0; // Program Counter
-// int mem[65536];
-// int halted = 0;  // Flag to indicate if the machine is halted
-
 // gcc -o Behave Behave.c 
 int conString_base10_to_Int(char* string){
     return strtol(string, NULL, 10);
@@ -103,7 +98,7 @@ void beq(char* regA, char* regB, char* offsetField){
 }
 
 // lw: Load word from memory into a register
-void lw(char* regA, char* regB, char* offsetField){
+void lw(char* regA, char* regB, char* offsetField, int symORmum){
     int A = conBi_to_IntReg(regA); 
     int B = conBi_to_IntReg(regB);
     
@@ -112,8 +107,12 @@ void lw(char* regA, char* regB, char* offsetField){
     }
     
     int address = reg[A] + conBi_to_Int(offsetField);
+    if(symORmum){
+        reg[B] = conString_base10_to_Int(fillvalue[address]);
+    }else{
+        reg[B] = conString_base10_to_Int(offsetField);
+    }
     
-    reg[B] = mem[address];
 }
 
 // sw: Store word from a register into memory
