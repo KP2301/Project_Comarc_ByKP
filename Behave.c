@@ -5,6 +5,15 @@
 #include "Global.h"
 
 // gcc -o Behave Behave.c 
+
+void movePtrTo(int target_PC, int MAX_PC, FILE* inFilePtr, long lineOffset[]){
+    if (target_PC <= MAX_PC) { // return to the targetline
+        fseek(inFilePtr, lineOffset[target_PC]-1, SEEK_SET); 
+    } else {
+        printf("Line %d does not exist in the file.\n", target_PC);
+    }
+}
+
 int conString_base10_to_Int(char* string){
     return strtol(string, NULL, 10);
 }
@@ -65,7 +74,7 @@ void add(char *regA, char *regB, char* destReg){
     reg[dest] = reg[A] + reg[B];
 }
 
-void nand(char* destReg,char *regA, char *regB){
+void nand(char *regA, char *regB,char* destReg){
     int A = conBi_to_IntReg(regA);
     int B = conBi_to_IntReg(regB);
     int dest = conBi_to_IntReg(destReg);
@@ -126,7 +135,9 @@ void sw(char *regA, char *regB, char *offsetField) {
     
     int address = reg[A] + conBi_to_Int(offsetField);
     
-    mem[address] = reg[B];
+    char* temp;
+    sprintf(temp, "%d", reg[B]);
+    fillvalue[address] = temp;
 }
 
 // halt: Set the halted flag and increment PC

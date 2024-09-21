@@ -96,54 +96,145 @@ int main(int argc, char *argv[])
             var[a] = strdup(label);
             var[a+1] = malloc(20 * sizeof(char));  
             sprintf(var[a+1], "%d", PC); // string to int
+            fillvalue[i] = strdup(label); // label
+            fillvalue[i+1] = strdup("0"); //value
+            fillvalue[i+2] = var[a+1];// PC
             a += 2;
+            i += 3;
         }
         if(strcmp(opcode, ".fill") == 0){ // keep .fill value in temp
-            fillvalue[i] = strdup(label);
+            fillvalue[i] = strdup(label); // label
             if(!isNumber(arg0)){ // in case of stAddr
                 for (int j = 0; j < a; j++) {
                     if(strcmp(var[j], arg0) == 0){
-                        fillvalue[i+1] = var[j+1];
+                        fillvalue[i+1] = var[j+1]; // value
                     }
                 }  
             }else{
-                fillvalue[i+1] = strdup(arg0);
+                fillvalue[i+1] = strdup(arg0); //value
             }
             fillvalue[i+2] = malloc(20 * sizeof(char));  
-            sprintf(fillvalue[i+2], "%d", PC);
+            sprintf(fillvalue[i+2], "%d", PC); // PC
             i+=3;
         }
         PC++;
     }
     PC = 0;
 
-    // for(int i = 0; i < a; i+=2){
-    //     printf("var %s:%s \n", var[i], var[i+1]);
+    //example of how to use movePtrTo 
+    // movePtrTo(5,MAX_PC,inFilePtr,lineOffsets);
+    // readAndParse(inFilePtr, label, opcode, arg0, arg1, arg2);
+    // printf("%s %s %s %s %s\n",label,opcode,arg0,arg1,arg2);
+
+
+    // rewind(inFilePtr);
+    // while(PC < MAX_PC){
+    //     readAndParse(inFilePtr, label, opcode, arg0, arg1, arg2);
+    //     char* rs1 = conInt_to_Binary(3,arg0);
+    //     char* rs2 = conInt_to_Binary(3,arg1);
+    //     char* rd;
+    //     char* offsetfild = {"0"};
+    //     if(isNumber(arg2)){
+    //         rd = conOffset(opcode, arg2);
+    //         offsetfild = rd;
+    //     }else{
+    //         for (int j = 0; j < i; j++) {
+    //             if(strcmp(fillvalue[j], arg2) == 0){
+    //                 rd = fillvalue[j+1];
+    //                 if(strcmp(opcode, "beq") == 0){
+    //                     int beqoff = conString_base10_to_Int(fillvalue[j+2])-(PC+1);
+    //                     offsetfild = malloc(20 * sizeof(char)); 
+    //                     sprintf(offsetfild, "%d", beqoff);  
+    //                 }else{
+    //                     offsetfild = fillvalue[j+2];
+    //                 }
+    //                 break;
+    //             }
+    //         }               
+    //         rd = conOffset(opcode, rd);
+    //         offsetfild = conOffset(opcode, offsetfild);
+    //     }
+    //         if (!strcmp(opcode, "add")) {
+
+    //             char* toBi[] = {first31to25,"000",rs1,rs2,"0000000000000",rd};
+    //             machine[PC] = concatbinary(6,toBi);
+    //             mem[PC] = conBi_to_Int(machine[PC]);
+
+    //         }else if(!strcmp(opcode, "nand")){
+
+    //             char* toBi[] = {first31to25,"001",rs1,rs2,"0000000000000",rd};
+    //             machine[PC] = concatbinary(6,toBi);
+    //             mem[PC] = conBi_to_Int(machine[PC]);
+
+    //         }else if(!strcmp(opcode, "beq")){
+
+    //             char* toBi[] = {first31to25,"100",rs1,rs2,offsetfild};
+    //             machine[PC] = concatbinary(5,toBi);
+    //             mem[PC] = conBi_to_Int(machine[PC]);
+
+    //         }else if(!strcmp(opcode, "lw")){
+
+    //             int symORnum = 0; // 0 : numeric,  1 : symbolic
+    //             if(!isNumber(arg2)){
+    //                 symORnum = 1;
+    //             } 
+    //             char* toBi[] = {first31to25,"010",rs1,rs2,offsetfild};
+    //             machine[PC] = concatbinary(5,toBi);
+    //             mem[PC] = conBi_to_Int(machine[PC]);
+
+    //         }else if(!strcmp(opcode, "sw")){
+
+    //             int symORnum = 0; // 0 : numeric,  1 : symbolic
+    //             if(!isNumber(arg2)){
+    //                 symORnum = 1;
+    //             } 
+    //             char* toBi[] = {first31to25,"011",rs1,rs2,offsetfild};
+    //             machine[PC] = concatbinary(5,toBi);
+    //             mem[PC] = conBi_to_Int(machine[PC]);
+
+    //         }else if(!strcmp(opcode, "jalr")){
+
+    //             char* toBi[] = {first31to25,"101",rs1,rs2,"0000000000000000"};
+    //             machine[PC] = concatbinary(5,toBi);
+    //             mem[PC] = conBi_to_Int(machine[PC]);
+                
+    //         }else if(!strcmp(opcode, "halt")){
+
+    //             char* toBi[] = {first31to25,"110","0000000000000000000000"};
+    //             machine[PC] = concatbinary(3,toBi);
+    //             mem[PC] = conBi_to_Int(machine[PC]);
+                
+    //         }else if(!strcmp(opcode, "noop")){
+
+    //             char* toBi[] = {first31to25,"111","0000000000000000000000"};
+    //             machine[PC] = concatbinary(3,toBi);
+    //             mem[PC] = conBi_to_Int(machine[PC]);
+                
+    //         }else if(!strcmp(opcode, ".fill")){
+
+    //             for(int a = 0; a < i; a++){
+    //                 if(!strcmp(label, fillvalue[a])){
+    //                     machine[PC] = conInt_to_Binary(32,fillvalue[a+1]);
+    //                     mem[PC] = conBi_to_Int(machine[PC]);
+    //                 }
+    //             }
+
+    //         } 
+    //         PC++;
     // }
 
-    // for(int j = 0; j < i; j+=3){
-    //     printf("temp %s:%s, PC: %s \n", fillvalue[j], fillvalue[j+1], fillvalue[j+2]);
+    // for(int i = 0; i < PC; i++){
+    //     printf("%d\n",mem[i]);
     // }
-
-    // printf("MAX_PC: %d\n", MAX_PC);
-    // target_PC = 3;
-    // if (target_PC <= MAX_PC) { // return to the targetline
-    //     // Move to the start of the desired line
-    //     fseek(inFilePtr, lineOffsets[target_PC - 1]-1, SEEK_SET); 
-    //     // readAndParse(inFilePtr, label, opcode, arg0, arg1, arg2);
-    //     // printf("%s %s %s %s %s\n",label,opcode,arg0,arg1,arg2);
-    // } else {
-    //     printf("Line %d does not exist in the file.\n", target_PC);
-    // }
-
-
+    // printf("\n");
 
     rewind(inFilePtr);
+    while(PC < MAX_PC){
         readAndParse(inFilePtr, label, opcode, arg0, arg1, arg2);
         char* rs1 = conInt_to_Binary(3,arg0);
         char* rs2 = conInt_to_Binary(3,arg1);
         char* rd;
-        char* offsetfild;
+        char* offsetfild = {"0"};
         if(isNumber(arg2)){
             rd = conOffset(opcode, arg2);
             offsetfild = rd;
@@ -151,7 +242,13 @@ int main(int argc, char *argv[])
             for (int j = 0; j < i; j++) {
                 if(strcmp(fillvalue[j], arg2) == 0){
                     rd = fillvalue[j+1];
-                    offsetfild = fillvalue[j+2];
+                    if(strcmp(opcode, "beq") == 0){
+                        int beqoff = conString_base10_to_Int(fillvalue[j+2])-(PC+1);
+                        offsetfild = malloc(20 * sizeof(char)); 
+                        sprintf(offsetfild, "%d", beqoff);  
+                    }else{
+                        offsetfild = fillvalue[j+2];
+                    }
                     break;
                 }
             }               
@@ -159,48 +256,47 @@ int main(int argc, char *argv[])
             offsetfild = conOffset(opcode, offsetfild);
         }
             if (!strcmp(opcode, "add")) {
-                printf("%s, %s, %s \n",rs1,rs2,rd);
-                char* toBi[] = {first31to25,"000",rs1,rs2,"0000000000000",rd};
-                machine[PC] = concatbinary(6,toBi);
-                mem[PC] = conBi_to_Int(machine[PC]);
                 add(rs1,rs2,rd);
-                printf("%s, %d, %d\n", machine[PC], mem[PC], reg[conBi_to_IntReg(rd)]);
+
+            }else if(!strcmp(opcode, "nand")){
+                nand(rs1,rs2,rd);
+
             }else if(!strcmp(opcode, "beq")){
-                printf("%s, %s, %s \n",rs1,rs2,rd);
-                char* toBi[] = {first31to25,"100",rs1,rs2,rd};
-                machine[PC] = concatbinary(5,toBi);
-                mem[PC] = conBi_to_Int(machine[PC]);
-                printf("%s, %d\n", machine[PC], mem[PC]);
+                beq(rs1,rs2,offsetfild);
+
             }else if(!strcmp(opcode, "lw")){
-                printf("%s, %s, %s \n",rs1,rs2,rd);
+
                 int symORnum = 0; // 0 : numeric,  1 : symbolic
                 if(!isNumber(arg2)){
                     symORnum = 1;
                 } 
-                char* toBi[] = {first31to25,"010",rs1,rs2,offsetfild};
-                machine[PC] = concatbinary(5,toBi);
-                mem[PC] = conBi_to_Int(machine[PC]);
-                // lw(rs1,rs2,rd,symORnum);// must use rd
-                printf("%s, %d\n", machine[PC], mem[PC]);
+                lw(rs1,rs2,)
+
+            }else if(!strcmp(opcode, "sw")){
+
+                int symORnum = 0; // 0 : numeric,  1 : symbolic
+                if(!isNumber(arg2)){
+                    symORnum = 1;
+                } 
+
+            }else if(!strcmp(opcode, "jalr")){
+
+                
+            }else if(!strcmp(opcode, "halt")){
+
+                
+            }else if(!strcmp(opcode, "noop")){
+
+
             }
+            PC++;
+    }
 
 
-    
-
+        
     return(0);
 }
 
-/*
- * Read and parse a line of the assembly-language file.  Fields are returned
- * in label, opcode, arg0, arg1, arg2 (these strings must have memory already
- * allocated to them).
- *
- * Return values:
- *     0 if reached end of file
- *     1 if all went well
- *
- * exit(1) if line is too long.
- */
 int readAndParse(FILE *inFilePtr, char *label, char *opcode, char *arg0,char *arg1, char *arg2)
 {
     char line[MAXLINELENGTH];
