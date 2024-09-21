@@ -109,19 +109,22 @@ int beq(char* regA, char* regB, char* offsetField, int move){
 }
 
 // lw: Load word from memory into a register
-void lw(char* regA, char* regB, char* offsetField, int symORmum){
+void lw(char* regA, char* regB, char* offsetField, int sizeofF){
     int A = conBi_to_IntReg(regA); 
     int B = conBi_to_IntReg(regB);
     
     if(strlen(offsetField) == 17){
         offsetField = conInt_to_Binary(32,offsetField);
     }
-    
+
     int address = reg[A] + conBi_to_Int(offsetField);
-    if(symORmum){ // 0 : numeric,  1 : symbolic
-        reg[B] = conString_base10_to_Int(fillvalue[address]);
-    }else{
-        reg[B] = conString_base10_to_Int(offsetField);
+    
+    char* addressStr = malloc(20 * sizeof(char));
+    sprintf(addressStr, "%d", address);
+    for(int j = 0; j < sizeofF; j+=3){
+        if(!strcmp(addressStr,fillvalue[j+2])){
+            reg[B] = conString_base10_to_Int(fillvalue[j+1]);
+        }
     }
     
 }
