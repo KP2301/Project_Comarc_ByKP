@@ -130,7 +130,7 @@ void lw(char* regA, char* regB, char* offsetField, int sizeofF){
 }
 
 // sw: Store word from a register into memory
-void sw(char *regA, char *regB, char *offsetField) {
+void sw(char *regA, char *regB, char *offsetField, int sizeofF) {
     int A = conBi_to_IntReg(regA);
     int B = conBi_to_IntReg(regB);
 
@@ -139,10 +139,17 @@ void sw(char *regA, char *regB, char *offsetField) {
     }
     
     int address = reg[A] + conBi_to_Int(offsetField);
-    
-    char* temp;
+
+    char* addressStr = malloc(20 * sizeof(char));
+    sprintf(addressStr, "%d", address);
+    char* temp = malloc(20 * sizeof(char));
     sprintf(temp, "%d", reg[B]);
-    fillvalue[address] = temp;
+    for(int j = 0; j < sizeofF; j+=3){
+        if(!strcmp(addressStr,fillvalue[j+2])){
+            fillvalue[j+1] = temp;
+        }
+    }
+    
 }
 
 // halt: Set the halted flag and increment PC
@@ -155,74 +162,3 @@ void halt() {
 void noop() {
     PC++;
 }
-
-// int main() {
-//     // printf("%s",conInt_to_Binary(32768));
-
-//     // add
-//     // reg[0] = 5;
-//     // reg[1] = -10000;
-//     // char* a = conInt_to_Binary(3,"0");
-//     // char* b = conInt_to_Binary(3,"1");
-//     // char* c = conInt_to_Binary(3,"0");
-//     // add(c,a,b); // reg[0] = reg[0] - reg[1]
-//     // printf("%d\n",reg[0]);
-
-//     // nand
-//     // char* a = "100";  //4
-//     // char* b = "010";  //2
-//     // char* c = "001";  //1
-//     // reg[conBi_to_IntReg(a)] = 12; //1100
-//     // reg[conBi_to_IntReg(b)] = 13; //1101
-//     // nand(c,a,b);
-//     // printf("%d\n",reg[1]); 
-
-//     //jalr
-//     // reg[1] = 3; //a
-//     // reg[2] = 3; //b
-//     // char* a = "001";  //1
-//     // char* b = "010";  //2
-//     // jalr(a,b);
-//     // printf("reg[1] : %d, reg[2] (Next PC) : %d, PC : %d",reg[1],reg[2],PC);
-
-//     //beq
-//     // reg[1] = 3; //a
-//     // reg[2] = 3; //b
-//     // char* a = "001";  //1
-//     // char* b = "010";  //2
-//     // char* offset = conInt_to_Binary(16,"-1000");
-//     // beq(a,b,offset);
-//     // printf("PC : %d",PC);
-
-//     // Initialize memory values for testing 'lw' and 'sw'
-//     // mem[10] = 42;
-//     // mem[14] = 99;
-
-//     // lw
-//     // reg[1] = 10;
-//     // char* a = "001"; // reg[1]
-//     // char* b = "010"; // reg[2]
-//     // char* offset = conInt_to_Binary(4);
-//     // lw(a, b, offset); 
-//     // printf("reg[2]: %d", reg[2]); // reg[2]: 99
-
-//     // sw
-//     // reg[1] = 40;
-//     // reg[2] = 20;
-//     // char* a = "001"; // reg[1]
-//     // char* b = "010"; // reg[2]
-//     // char* offset = conInt_to_Binary(0);
-//     // sw(a, b, offset);
-//     // printf("mem[40]: %d", mem[40]); // mem[40]: 20
-
-//     // halt
-//     // halt();
-//     // printf("PC: %d, halted: %d", PC, halted); // PC: 1, halted: 1
-
-//     // no-op
-//     // noop();
-//     // printf("PC: %d", PC); // PC: 1
-
-
-//     return 0;
-// }

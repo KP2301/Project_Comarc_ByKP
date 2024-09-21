@@ -14,7 +14,7 @@
 
 int mem[65536];
 char* machine[65536] = {0};
-int reg[8] = {0,0,0,0,0,0,0,0};
+int reg[8] = {0,0,0,0,10,0,0,0};
 int PC = 0;
 int halted = 0;
 char* fillvalue[50] = {"0"}; // .fill label and value
@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
     //         rd = conOffset(opcode, arg2);
     //         offsetfild = rd;
     //     }else{
-    //         for (int j = 0; j < i; j++) {
+    //         for (int j = 0; j < sizeoffill; j++) {
     //             if(strcmp(fillvalue[j], arg2) == 0){
     //                 rd = fillvalue[j+1];
     //                 if(strcmp(opcode, "beq") == 0){
@@ -195,7 +195,7 @@ int main(int argc, char *argv[])
     //             machine[PC] = concatbinary(3,toBi);
     //             mem[PC] = conBi_to_Int(machine[PC]);            
     //         }else if(!strcmp(opcode, ".fill")){
-    //             for(int a = 0; a < i; a++){
+    //             for(int a = 0; a < sizeoffill; a++){
     //                 if(!strcmp(label, fillvalue[a])){
     //                     machine[PC] = conInt_to_Binary(32,fillvalue[a+1]);
     //                     mem[PC] = conBi_to_Int(machine[PC]);
@@ -214,6 +214,7 @@ int main(int argc, char *argv[])
         printf("label : %s, value : %s, PC : %s\n",fillvalue[j],fillvalue[j+1],fillvalue[j+2]);
     }
 
+    PC = 0;
     rewind(inFilePtr);
     while(PC < MAX_PC){
         printf("PC : %d\n",PC);
@@ -261,11 +262,7 @@ int main(int argc, char *argv[])
 
             }else if(!strcmp(opcode, "sw")){
 
-                int symORnum = 0; // 0 : numeric,  1 : symbolic
-                if(!isNumber(arg2)){
-                    symORnum = 1;
-                } 
-                sw(rs1,rs2,rd);
+                sw(rs1,rs2,offsetfild,sizeoffill);
 
             }else if(!strcmp(opcode, "jalr")){
                 jalr(rs1,rs2);
@@ -288,6 +285,10 @@ int main(int argc, char *argv[])
             }
             printf("--------------------------------------------------------\n");
 
+    }
+
+    for(int j = 0; j < sizeoffill; j+=3){
+        printf("label : %s, value : %s, PC : %s\n",fillvalue[j],fillvalue[j+1],fillvalue[j+2]);
     }
     
     return(0);

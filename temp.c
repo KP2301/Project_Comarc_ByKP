@@ -88,33 +88,33 @@ int main(int argc, char *argv[])
     }
     rewind(inFilePtr);
 
-    int i = 0; 
+    int sizeoffill = 0; 
     int a = 0;
     while(readAndParse(inFilePtr, label, opcode, arg0, arg1, arg2)){
         if( strcmp(opcode, ".fill") != 0 && strspn(label, " \t\n") != strlen(label)){ // keep PC of loop or function
             var[a] = strdup(label);
             var[a+1] = malloc(20 * sizeof(char));  
             sprintf(var[a+1], "%d", PC); // string to int
-            fillvalue[i] = strdup(label); // label
-            fillvalue[i+1] = strdup("0"); //value
-            fillvalue[i+2] = var[a+1];// PC
+            fillvalue[sizeoffill] = strdup(label); // label
+            fillvalue[sizeoffill+1] = strdup("0"); //value
+            fillvalue[sizeoffill+2] = var[a+1];// PC
             a += 2;
-            i += 3;
+            sizeoffill += 3;
         }
         if(strcmp(opcode, ".fill") == 0){ // keep .fill value in temp
-            fillvalue[i] = strdup(label); // label
+            fillvalue[sizeoffill] = strdup(label); // label
             if(!isNumber(arg0)){ // in case of stAddr
                 for (int j = 0; j < a; j++) {
                     if(strcmp(var[j], arg0) == 0){
-                        fillvalue[i+1] = var[j+1]; // value
+                        fillvalue[sizeoffill+1] = var[j+1]; // value
                     }
                 }  
             }else{
-                fillvalue[i+1] = strdup(arg0); //value
+                fillvalue[sizeoffill+1] = strdup(arg0); //value
             }
-            fillvalue[i+2] = malloc(20 * sizeof(char));  
-            sprintf(fillvalue[i+2], "%d", PC); // PC
-            i+=3;
+            fillvalue[sizeoffill+2] = malloc(20 * sizeof(char));  
+            sprintf(fillvalue[sizeoffill+2], "%d", PC); // PC
+            sizeoffill+=3;
         }
         PC++;
     }
@@ -210,7 +210,7 @@ int main(int argc, char *argv[])
     // }
     // printf("\n");
 
-    for(int j = 0; j < i; j+=3){
+    for(int j = 0; j < sizeoffill; j+=3){
         printf("label : %s, value : %s, PC : %s\n",fillvalue[j],fillvalue[j+1],fillvalue[j+2]);
     }
 
@@ -227,7 +227,7 @@ int main(int argc, char *argv[])
             rd = conOffset(opcode, arg2);
             offsetfild = rd;
         }else{
-            for (int j = 0; j < i; j++) {
+            for (int j = 0; j < sizeoffill; j++) {
                 if(strcmp(fillvalue[j], arg2) == 0){
                     rd = fillvalue[j+1];
                     if(strcmp(opcode, "beq") == 0){
@@ -257,9 +257,7 @@ int main(int argc, char *argv[])
                 }
 
             }else if(!strcmp(opcode, "lw")){
-
-                int symORnum = i; // 0 : numeric,  1 : symbolic
-                lw(rs1,rs2,offsetfild,symORnum);
+                lw(rs1,rs2,offsetfild,sizeoffill);
 
             }else if(!strcmp(opcode, "sw")){
 
