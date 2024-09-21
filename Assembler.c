@@ -14,7 +14,7 @@
 
 int mem[65536];
 char* machine[65536] = {0};
-int reg[8] = {0,0,0,0,10,0,0,0};
+int reg[8] = {0,0,0,0,0,0,0,0};
 int PC = 0;
 int halted = 0;
 char* fillvalue[50] = {"0"}; // .fill label and value
@@ -22,6 +22,7 @@ char* var[20] = {"0"};
 long lineOffsets[100] = {0};
 int target_PC = 0;
 int MAX_PC = 0;
+int sizeoffill = 0; 
 
 int readAndParse(FILE *, char *, char *, char *, char *, char *);
 int isNumber(char *);
@@ -51,6 +52,22 @@ char* conOffset(char* opcode, char* arg2){
         result = conInt_to_Binary(3,arg2);
     }
     return result;
+}
+
+void printState(int PC, int mem[], int reg[],int numMemory)
+{
+    int i;
+    printf("\n@@@\nstate:\n");
+    printf("\tpc %d\n", PC);
+    printf("\tmemory:\n");
+	for (i=0; i<numMemory; i++) {
+	    printf("\t\tmem[ %d ] %d\n", i, mem[i]);
+	}
+    printf("\tregisters:\n");
+	for (i=0; i<8; i++) {
+	    printf("\t\treg[ %d ] %d\n", i, reg[i]);
+	}
+    printf("end state\n");
 }
 
 int main(int argc, char *argv[])
@@ -88,7 +105,6 @@ int main(int argc, char *argv[])
     }
     rewind(inFilePtr);
 
-    int sizeoffill = 0; 
     int a = 0;
     while(readAndParse(inFilePtr, label, opcode, arg0, arg1, arg2)){
         if( strcmp(opcode, ".fill") != 0 && strspn(label, " \t\n") != strlen(label)){ // keep PC of loop or function
@@ -120,104 +136,100 @@ int main(int argc, char *argv[])
     }
     PC = 0;
 
-    //example of how to use movePtrTo 
-    // movePtrTo(5,MAX_PC,inFilePtr,lineOffsets);
-    // readAndParse(inFilePtr, label, opcode, arg0, arg1, arg2);
-    // printf("%s %s %s %s %s\n",label,opcode,arg0,arg1,arg2);
+    rewind(inFilePtr);
 
+    while(PC < MAX_PC){
+        readAndParse(inFilePtr, label, opcode, arg0, arg1, arg2);
+        char* rs1 = conInt_to_Binary(3,arg0);
+        char* rs2 = conInt_to_Binary(3,arg1);
+        char* rd;
+        char* offsetfild = {"0"};
+        if(isNumber(arg2)){
+            rd = conOffset(opcode, arg2);
+            offsetfild = rd;
+        }else{
+            for (int j = 0; j < sizeoffill; j++) {
+                if(strcmp(fillvalue[j], arg2) == 0){
+                    rd = fillvalue[j+1];
+                    if(strcmp(opcode, "beq") == 0){
+                        int beqoff = conString_base10_to_Int(fillvalue[j+2])-(PC+1);
+                        offsetfild = malloc(20 * sizeof(char)); 
+                        sprintf(offsetfild, "%d", beqoff);  
+                    }else{
+                        offsetfild = fillvalue[j+2];
+                    }
+                    break;
+                }
+            }               
+            rd = conOffset(opcode, rd);
+            offsetfild = conOffset(opcode, offsetfild);
+        }
+            if (!strcmp(opcode, "add")) {
+                char* toBi[] = {first31to25,"000",rs1,rs2,"0000000000000",rd};
+                machine[PC] = concatbinary(6,toBi);
+                mem[PC] = conBi_to_Int(machine[PC]);
+            }else if(!strcmp(opcode, "nand")){
+                char* toBi[] = {first31to25,"001",rs1,rs2,"0000000000000",rd};
+                machine[PC] = concatbinary(6,toBi);
+                mem[PC] = conBi_to_Int(machine[PC]);
+            }else if(!strcmp(opcode, "beq")){
+                char* toBi[] = {first31to25,"100",rs1,rs2,offsetfild};
+                machine[PC] = concatbinary(5,toBi);
+                mem[PC] = conBi_to_Int(machine[PC]);
+            }else if(!strcmp(opcode, "lw")){
+                int symORnum = 0; // 0 : numeric,  1 : symbolic
+                if(!isNumber(arg2)){
+                    symORnum = 1;
+                } 
+                char* toBi[] = {first31to25,"010",rs1,rs2,offsetfild};
+                machine[PC] = concatbinary(5,toBi);
+                mem[PC] = conBi_to_Int(machine[PC]);
+            }else if(!strcmp(opcode, "sw")){
+                int symORnum = 0; // 0 : numeric,  1 : symbolic
+                if(!isNumber(arg2)){
+                    symORnum = 1;
+                } 
+                char* toBi[] = {first31to25,"011",rs1,rs2,offsetfild};
+                machine[PC] = concatbinary(5,toBi);
+                mem[PC] = conBi_to_Int(machine[PC]);
+            }else if(!strcmp(opcode, "jalr")){
+                char* toBi[] = {first31to25,"101",rs1,rs2,"0000000000000000"};
+                machine[PC] = concatbinary(5,toBi);
+                mem[PC] = conBi_to_Int(machine[PC]);               
+            }else if(!strcmp(opcode, "halt")){
+                char* toBi[] = {first31to25,"110","0000000000000000000000"};
+                machine[PC] = concatbinary(3,toBi);
+                mem[PC] = conBi_to_Int(machine[PC]);             
+            }else if(!strcmp(opcode, "noop")){
+                char* toBi[] = {first31to25,"111","0000000000000000000000"};
+                machine[PC] = concatbinary(3,toBi);
+                mem[PC] = conBi_to_Int(machine[PC]);            
+            }else if(!strcmp(opcode, ".fill")){
+                for(int a = 0; a < sizeoffill; a++){
+                    if(!strcmp(label, fillvalue[a])){
+                        machine[PC] = conInt_to_Binary(32,fillvalue[a+1]);
+                        mem[PC] = conBi_to_Int(machine[PC]);
+                    }
+                }
+            } 
+            PC++;
+    }
 
-    // rewind(inFilePtr);
-
-    // while(PC < MAX_PC){
-    //     readAndParse(inFilePtr, label, opcode, arg0, arg1, arg2);
-    //     char* rs1 = conInt_to_Binary(3,arg0);
-    //     char* rs2 = conInt_to_Binary(3,arg1);
-    //     char* rd;
-    //     char* offsetfild = {"0"};
-    //     if(isNumber(arg2)){
-    //         rd = conOffset(opcode, arg2);
-    //         offsetfild = rd;
-    //     }else{
-    //         for (int j = 0; j < sizeoffill; j++) {
-    //             if(strcmp(fillvalue[j], arg2) == 0){
-    //                 rd = fillvalue[j+1];
-    //                 if(strcmp(opcode, "beq") == 0){
-    //                     int beqoff = conString_base10_to_Int(fillvalue[j+2])-(PC+1);
-    //                     offsetfild = malloc(20 * sizeof(char)); 
-    //                     sprintf(offsetfild, "%d", beqoff);  
-    //                 }else{
-    //                     offsetfild = fillvalue[j+2];
-    //                 }
-    //                 break;
-    //             }
-    //         }               
-    //         rd = conOffset(opcode, rd);
-    //         offsetfild = conOffset(opcode, offsetfild);
-    //     }
-    //         if (!strcmp(opcode, "add")) {
-    //             char* toBi[] = {first31to25,"000",rs1,rs2,"0000000000000",rd};
-    //             machine[PC] = concatbinary(6,toBi);
-    //             mem[PC] = conBi_to_Int(machine[PC]);
-    //         }else if(!strcmp(opcode, "nand")){
-    //             char* toBi[] = {first31to25,"001",rs1,rs2,"0000000000000",rd};
-    //             machine[PC] = concatbinary(6,toBi);
-    //             mem[PC] = conBi_to_Int(machine[PC]);
-    //         }else if(!strcmp(opcode, "beq")){
-    //             char* toBi[] = {first31to25,"100",rs1,rs2,offsetfild};
-    //             machine[PC] = concatbinary(5,toBi);
-    //             mem[PC] = conBi_to_Int(machine[PC]);
-    //         }else if(!strcmp(opcode, "lw")){
-    //             int symORnum = 0; // 0 : numeric,  1 : symbolic
-    //             if(!isNumber(arg2)){
-    //                 symORnum = 1;
-    //             } 
-    //             char* toBi[] = {first31to25,"010",rs1,rs2,offsetfild};
-    //             machine[PC] = concatbinary(5,toBi);
-    //             mem[PC] = conBi_to_Int(machine[PC]);
-    //         }else if(!strcmp(opcode, "sw")){
-    //             int symORnum = 0; // 0 : numeric,  1 : symbolic
-    //             if(!isNumber(arg2)){
-    //                 symORnum = 1;
-    //             } 
-    //             char* toBi[] = {first31to25,"011",rs1,rs2,offsetfild};
-    //             machine[PC] = concatbinary(5,toBi);
-    //             mem[PC] = conBi_to_Int(machine[PC]);
-    //         }else if(!strcmp(opcode, "jalr")){
-    //             char* toBi[] = {first31to25,"101",rs1,rs2,"0000000000000000"};
-    //             machine[PC] = concatbinary(5,toBi);
-    //             mem[PC] = conBi_to_Int(machine[PC]);               
-    //         }else if(!strcmp(opcode, "halt")){
-    //             char* toBi[] = {first31to25,"110","0000000000000000000000"};
-    //             machine[PC] = concatbinary(3,toBi);
-    //             mem[PC] = conBi_to_Int(machine[PC]);             
-    //         }else if(!strcmp(opcode, "noop")){
-    //             char* toBi[] = {first31to25,"111","0000000000000000000000"};
-    //             machine[PC] = concatbinary(3,toBi);
-    //             mem[PC] = conBi_to_Int(machine[PC]);            
-    //         }else if(!strcmp(opcode, ".fill")){
-    //             for(int a = 0; a < sizeoffill; a++){
-    //                 if(!strcmp(label, fillvalue[a])){
-    //                     machine[PC] = conInt_to_Binary(32,fillvalue[a+1]);
-    //                     mem[PC] = conBi_to_Int(machine[PC]);
-    //                 }
-    //             }
-    //         } 
-    //         PC++;
-    // }
+    PC = 0;
+    printState(PC, mem, reg,MAX_PC);
 
     // for(int i = 0; i < PC; i++){
     //     printf("%d\n",mem[i]);
     // }
     // printf("\n");
 
-    for(int j = 0; j < sizeoffill; j+=3){
-        printf("label : %s, value : %s, PC : %s\n",fillvalue[j],fillvalue[j+1],fillvalue[j+2]);
-    }
+    // for(int j = 0; j < sizeoffill; j+=3){
+    //     printf("label : %s, value : %s, PC : %s\n",fillvalue[j],fillvalue[j+1],fillvalue[j+2]);
+    // }
 
-    PC = 0;
     rewind(inFilePtr);
     while(PC < MAX_PC){
-        printf("PC : %d\n",PC);
+        // printf("PC : %d\n",PC);
         int move = 0; // not move
         readAndParse(inFilePtr, label, opcode, arg0, arg1, arg2);
         char* rs1 = conInt_to_Binary(3,arg0);
@@ -258,11 +270,11 @@ int main(int argc, char *argv[])
                 }
 
             }else if(!strcmp(opcode, "lw")){
-                lw(rs1,rs2,offsetfild,sizeoffill);
+                lw(rs1,rs2,offsetfild);
 
             }else if(!strcmp(opcode, "sw")){
 
-                sw(rs1,rs2,offsetfild,sizeoffill);
+                sw(rs1,rs2,offsetfild);
 
             }else if(!strcmp(opcode, "jalr")){
                 jalr(rs1,rs2);
@@ -280,16 +292,17 @@ int main(int argc, char *argv[])
             if(!move){
                  PC++;
             }
-            for(int i = 0; i < 8; i++){
-                printf("reg[%d]: %d\n",i,reg[i]);
-            }
-            printf("--------------------------------------------------------\n");
+            // for(int i = 0; i < 8; i++){
+            //     printf("reg[%d]: %d\n",i,reg[i]);
+            // }
+            // printf("--------------------------------------------------------\n");
+            printState(PC, mem, reg,MAX_PC);
 
     }
 
-    for(int j = 0; j < sizeoffill; j+=3){
-        printf("label : %s, value : %s, PC : %s\n",fillvalue[j],fillvalue[j+1],fillvalue[j+2]);
-    }
+    // for(int j = 0; j < sizeoffill; j+=3){
+    //     printf("label : %s, value : %s, PC : %s\n",fillvalue[j],fillvalue[j+1],fillvalue[j+2]);
+    // }
     
     return(0);
 }

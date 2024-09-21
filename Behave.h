@@ -20,11 +20,10 @@ void add(char* destReg, char *regA, char *regB);
 void nand(char *regA, char *regB,char* destReg);
 void jalr(char* regA, char* regB);
 int beq(char* regA, char* regB, char* offsetField, int move);
-void lw(char* regA, char* regB, char* offsetField, int sizeofF);
-void sw(char *regA, char *regB, char *offsetField, int sizeofF);
+void lw(char* regA, char* regB, char* offsetField);
+void sw(char *regA, char *regB, char *offsetField);
 void halt();
 void noop();
 void movePtrTo(int target_PC, int MAX_PC, FILE* inFilePtr, long lineOffset[]);
-void printState(stateType *);
 
 #endif // BEHAVE_H

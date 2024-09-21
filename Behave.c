@@ -109,7 +109,7 @@ int beq(char* regA, char* regB, char* offsetField, int move){
 }
 
 // lw: Load word from memory into a register
-void lw(char* regA, char* regB, char* offsetField, int sizeofF){
+void lw(char* regA, char* regB, char* offsetField){
     int A = conBi_to_IntReg(regA); 
     int B = conBi_to_IntReg(regB);
     
@@ -121,7 +121,7 @@ void lw(char* regA, char* regB, char* offsetField, int sizeofF){
     
     char* addressStr = malloc(20 * sizeof(char));
     sprintf(addressStr, "%d", address);
-    for(int j = 0; j < sizeofF; j+=3){
+    for(int j = 0; j < sizeoffill; j+=3){
         if(!strcmp(addressStr,fillvalue[j+2])){
             reg[B] = conString_base10_to_Int(fillvalue[j+1]);
         }
@@ -130,7 +130,7 @@ void lw(char* regA, char* regB, char* offsetField, int sizeofF){
 }
 
 // sw: Store word from a register into memory
-void sw(char *regA, char *regB, char *offsetField, int sizeofF) {
+void sw(char *regA, char *regB, char *offsetField) {
     int A = conBi_to_IntReg(regA);
     int B = conBi_to_IntReg(regB);
 
@@ -144,7 +144,7 @@ void sw(char *regA, char *regB, char *offsetField, int sizeofF) {
     sprintf(addressStr, "%d", address);
     char* temp = malloc(20 * sizeof(char));
     sprintf(temp, "%d", reg[B]);
-    for(int j = 0; j < sizeofF; j+=3){
+    for(int j = 0; j < sizeoffill; j+=3){
         if(!strcmp(addressStr,fillvalue[j+2])){
             fillvalue[j+1] = temp;
         }
