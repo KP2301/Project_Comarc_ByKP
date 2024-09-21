@@ -9,7 +9,7 @@ char* conInt_to_Binary(int bits, char* nums);
 void add(char* destReg, char *regA, char *regB);
 void nand(char *regA, char *regB,char* destReg);
 void jalr(char* regA, char* regB);
-void beq(char* regA, char* regB, char* offsetField);
+int beq(char* regA, char* regB, char* offsetField, int move);
 void lw(char* regA, char* regB, char* offsetField, int symORmum);
 void sw(char *regA, char *regB, char *offsetField);
 void halt();

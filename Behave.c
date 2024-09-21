@@ -95,7 +95,7 @@ void jalr(char* regA, char* regB){
     }
 }
 
-void beq(char* regA, char* regB, char* offsetField){
+int beq(char* regA, char* regB, char* offsetField, int move){
     int A = conBi_to_IntReg(regA);
     int B = conBi_to_IntReg(regB);
     if(strlen(offsetField) == 17){
@@ -103,7 +103,9 @@ void beq(char* regA, char* regB, char* offsetField){
     }
     if(reg[A] == reg[B]){
         PC = PC+1+conBi_to_Int(offsetField);
+        return 1;
     }
+    return 0;
 }
 
 // lw: Load word from memory into a register
@@ -116,7 +118,7 @@ void lw(char* regA, char* regB, char* offsetField, int symORmum){
     }
     
     int address = reg[A] + conBi_to_Int(offsetField);
-    if(symORmum){
+    if(symORmum){ // 0 : numeric,  1 : symbolic
         reg[B] = conString_base10_to_Int(fillvalue[address]);
     }else{
         reg[B] = conString_base10_to_Int(offsetField);
