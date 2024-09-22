@@ -1,4 +1,8 @@
 /* instruction-level simulator */
+
+// gcc -o Simulator Simulator.c Behave.c
+// ./Simulator machine_code.txt
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
