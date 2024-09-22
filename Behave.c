@@ -93,9 +93,10 @@ void jalr(char* regA, char* regB){
         reg[B] = Next_PC;
         PC = reg[A];
     }
+    move = 1;
 }
 
-int beq(char* regA, char* regB, char* offsetField, int move){
+void beq(char* regA, char* regB, char* offsetField){
     int A = conBi_to_IntReg(regA);
     int B = conBi_to_IntReg(regB);
     if(strlen(offsetField) == 17){
@@ -103,34 +104,24 @@ int beq(char* regA, char* regB, char* offsetField, int move){
     }
     if(reg[A] == reg[B]){
         PC = PC+1+conBi_to_Int(offsetField);
-        return 1;
+        move = 1;
     }
-    return 0;
 }
 
 // lw: Load word from memory into a register
-void lw(char* regA, char* regB, char* offsetField){
+void lw(char* regA, char* regB, char* offsetField, int MEM[]){
     int A = conBi_to_IntReg(regA); 
     int B = conBi_to_IntReg(regB);
     
     if(strlen(offsetField) == 17){
         offsetField = conInt_to_Binary(32,offsetField);
     }
-
     int address = reg[A] + conBi_to_Int(offsetField);
-    
-    char* addressStr = malloc(20 * sizeof(char));
-    sprintf(addressStr, "%d", address);
-    for(int j = 0; j < sizeoffill; j+=3){
-        if(!strcmp(addressStr,fillvalue[j+2])){
-            reg[B] = conString_base10_to_Int(fillvalue[j+1]);
-        }
-    }
-    
+    reg[B] = MEM[address];
 }
 
 // sw: Store word from a register into memory
-void sw(char *regA, char *regB, char *offsetField) {
+void sw(char *regA, char *regB, char *offsetField, int MEM[]) {
     int A = conBi_to_IntReg(regA);
     int B = conBi_to_IntReg(regB);
 
@@ -139,26 +130,27 @@ void sw(char *regA, char *regB, char *offsetField) {
     }
     
     int address = reg[A] + conBi_to_Int(offsetField);
-
-    char* addressStr = malloc(20 * sizeof(char));
-    sprintf(addressStr, "%d", address);
-    char* temp = malloc(20 * sizeof(char));
-    sprintf(temp, "%d", reg[B]);
-    for(int j = 0; j < sizeoffill; j+=3){
-        if(!strcmp(addressStr,fillvalue[j+2])){
-            fillvalue[j+1] = temp;
-        }
-    }
-    
+    MEM[address] = reg[B];
 }
 
 // halt: Set the halted flag and increment PC
 void halt() {
     PC++;
-    halted = 1;
 }
 
 // no-op: Increment PC without changing other state
 void noop() {
     PC++;
 }
+
+char* conOffset(char* opcode, char* arg2)
+{
+    char* result;
+    if((!strcmp(opcode, "beq")) || (!strcmp(opcode, "lw")) || (!strcmp(opcode, "sw"))){
+        result = conInt_to_Binary(16,arg2);
+    }else{
+        result = conInt_to_Binary(3,arg2);
+    }
+    return result;
+}
+
