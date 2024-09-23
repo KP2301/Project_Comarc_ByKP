@@ -14,18 +14,16 @@
 #define MAXLINELENGTH 1000
 
 int reg[8] = {0,0,0,0,0,0,0,0};
-long lineOffsets[100] = {0};
 int MAX_PC = 0;
 int PC = 0;
 int move = 0;
-char* fillvalue[50] = {"0"};
 
-char Opcode[5]; 
+char Opcode[4]; 
 char regA[4];
 char regB[4];
 char rd[4];
-char offset[17];
-char* binary[8];
+char offset[17] = {"0"};
+char* binary[MAXLINELENGTH];
 typedef struct stateStruct {
     int pc;
     int mem[NUMMEMORY];
@@ -58,6 +56,7 @@ void ITYPE(){
         offset[posoff] = binary[PC][j];
         posoff++;
     }
+    offset[posoff] = '\0';
 }
 
 void JTYPE(){
@@ -105,6 +104,7 @@ int main(int argc, char *argv[])
     printState(&state);
 
     while(PC < state.numMemory){
+            state.pc = PC;
             move = 0;
             sprintf(mach, "%d", state.mem[PC]);
             binary[PC] = conInt_to_Binary(32,mach);
@@ -114,51 +114,49 @@ int main(int argc, char *argv[])
                 pos++;
             }
             // Opcode[0] = binary[PC][7]; // Bit 24:  7 = 31-24
-            Opcode[5] = '\0';
+            Opcode[4] = '\0';
 
             // printf("%s\n",binary[state.pc]);
             if(!strcmp(Opcode, "000")){
-                strcpy(Opcode, "add");
+                // add
                 RTYPE();
                 add(regA,regB,rd);
             }else if(!strcmp(Opcode, "001")){
-                strcpy(Opcode, "nand");
+                // nand
                 RTYPE();
                 nand(regA,regB,rd);
             }else if(!strcmp(Opcode, "010")){
-                strcpy(Opcode, "lw");
+                // lw
                 ITYPE();
                 lw(regA,regB,offset,state.mem);
             }else if(!strcmp(Opcode, "011")){
-                strcpy(Opcode, "sw");
+                // sw
                 ITYPE();
                 sw(regA,regB,offset,state.mem);
             }else if(!strcmp(Opcode, "100")){
-                strcpy(Opcode, "beq");
+                // beq
                 ITYPE();
                 beq(regA,regB,offset);
             }else if(!strcmp(Opcode, "101")){
-                strcpy(Opcode, "jalr");
+                // jalr
                 JTYPE();
                 jalr(regA,regB);
+                continue;
             }else if(!strcmp(Opcode, "110")){
-                strcpy(Opcode, "halt");
+                // halt
                 halt();
                 break;
             }else if(!strcmp(Opcode, "111")){
-                strcpy(Opcode, "noop");
+                // noop
                 noop();
             }
-            if(!move){
-                PC++;  
-            }
-            state.pc = PC;
+            // if(!move){  // for testing
+            //     PC++;  
+            // }
             for(int i = 0; i < 8; i++){
                 state.reg[i] = reg[i];
             }
             printState(&state);
-            // printf("Opcode: %s, regA : %s, regB : %s, rd : %s, offset : %s \n",Opcode,regA,regB,rd,offset);
-        
     }
 
 

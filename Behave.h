@@ -14,7 +14,6 @@ void lw(char* regA, char* regB, char* offsetField,int MEM[]);
 void sw(char *regA, char *regB, char *offsetField,int MEM[]);
 void halt();
 void noop();
-void movePtrTo(int target_PC, int MAX_PC, FILE* inFilePtr, long lineOffset[]);
 char* conOffset(char* opcode, char* arg2);
 
 #endif // BEHAVE_H

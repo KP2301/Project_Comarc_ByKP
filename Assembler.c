@@ -49,22 +49,6 @@ char* concatbinary(int numStrings, char *strings[]) {
     return result;
 }
 
-void printState(int PC, int mem[], int reg[],int numMemory)
-{
-    int i;
-    printf("\n@@@\nstate:\n");
-    printf("\tpc %d\n", PC);
-    printf("\tmemory:\n");
-	for (i=0; i<numMemory; i++) {
-	    printf("\t\tmem[ %d ] %d\n", i, mem[i]);
-	}
-    printf("\tregisters:\n");
-	for (i=0; i<8; i++) {
-	    printf("\t\treg[ %d ] %d\n", i, reg[i]);
-	}
-    printf("end state\n");
-}
-
 int main(int argc, char *argv[])
 {
     if (argc != 3) {
@@ -131,8 +115,9 @@ int main(int argc, char *argv[])
             rd = conOffset(opcode, arg2);
             offsetfild = rd;
         }else{
-            for (int j = 0; j < sizeoffill; j++) {
+            for (int j = 0; j < sizeoffill; j++) {   // mistake on calculate opsetfild (think at 0.36 offsetfild = PCof.fill - PCnow)
                 if(strcmp(fillvalue[j], arg2) == 0){
+                    // คำนวณ offsetfild ผิดต้องเป็น PC ของ .fill - PC ปจบ
                     rd = fillvalue[j+1];
                     if(strcmp(opcode, "beq") == 0){
                         int beqoff = conString_base10_to_Int(fillvalue[j+2])-(PC+1);
@@ -146,7 +131,7 @@ int main(int argc, char *argv[])
             }               
             rd = conOffset(opcode, rd);
             offsetfild = conOffset(opcode, offsetfild);
-        }
+        } 
             if (!strcmp(opcode, "add")) {
                 char* toBi[] = {first31to25,"000",rs1,rs2,"0000000000000",rd};
                 machine[PC] = concatbinary(6,toBi);
@@ -160,18 +145,10 @@ int main(int argc, char *argv[])
                 machine[PC] = concatbinary(5,toBi);
                 mem[PC] = conBi_to_Int(machine[PC]);
             }else if(!strcmp(opcode, "lw")){
-                int symORnum = 0; // 0 : numeric,  1 : symbolic
-                if(!isNumber(arg2)){
-                    symORnum = 1;
-                } 
                 char* toBi[] = {first31to25,"010",rs1,rs2,offsetfild};
                 machine[PC] = concatbinary(5,toBi);
                 mem[PC] = conBi_to_Int(machine[PC]);
             }else if(!strcmp(opcode, "sw")){
-                int symORnum = 0; // 0 : numeric,  1 : symbolic
-                if(!isNumber(arg2)){
-                    symORnum = 1;
-                } 
                 char* toBi[] = {first31to25,"011",rs1,rs2,offsetfild};
                 machine[PC] = concatbinary(5,toBi);
                 mem[PC] = conBi_to_Int(machine[PC]);
@@ -205,8 +182,6 @@ int main(int argc, char *argv[])
     // for(int j = 0; j < sizeoffill; j+=3){
     //     printf("label : %s, value : %s, PC : %s\n",fillvalue[j],fillvalue[j+1],fillvalue[j+2]);
     // }
-
-
     
     return(0);
 }

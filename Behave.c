@@ -6,14 +6,6 @@
 
 // gcc -o Behave Behave.c 
 
-void movePtrTo(int target_PC, int MAX_PC, FILE* inFilePtr, long lineOffset[]){
-    if (target_PC <= MAX_PC) { // return to the targetline
-        fseek(inFilePtr, lineOffset[target_PC]-1, SEEK_SET); 
-    } else {
-        printf("Line %d does not exist in the file.\n", target_PC);
-    }
-}
-
 int conString_base10_to_Int(char* string){
     return strtol(string, NULL, 10);
 }
@@ -72,6 +64,7 @@ void add(char *regA, char *regB, char* destReg){
     int B = conBi_to_IntReg(regB);
     int dest = conBi_to_IntReg(destReg);
     reg[dest] = reg[A] + reg[B];
+    PC++;
 }
 
 void nand(char *regA, char *regB,char* destReg){
@@ -80,6 +73,7 @@ void nand(char *regA, char *regB,char* destReg){
     int dest = conBi_to_IntReg(destReg);
     reg[dest] = ~(reg[A] & reg[B]) & 0xF; // To avoid the higher num and 2 com.
     //0xF is 4 bits for 8 is FF, and 16 is FFF 
+    PC++;
 }
 
 void jalr(char* regA, char* regB){
@@ -93,7 +87,7 @@ void jalr(char* regA, char* regB){
         reg[B] = Next_PC;
         PC = reg[A];
     }
-    move = 1;
+    // move = 1;
 }
 
 void beq(char* regA, char* regB, char* offsetField){
@@ -105,6 +99,8 @@ void beq(char* regA, char* regB, char* offsetField){
     if(reg[A] == reg[B]){
         PC = PC+1+conBi_to_Int(offsetField);
         move = 1;
+    }else{
+        PC++;
     }
 }
 
@@ -118,6 +114,7 @@ void lw(char* regA, char* regB, char* offsetField, int MEM[]){
     }
     int address = reg[A] + conBi_to_Int(offsetField);
     reg[B] = MEM[address];
+    PC++;
 }
 
 // sw: Store word from a register into memory
@@ -131,6 +128,7 @@ void sw(char *regA, char *regB, char *offsetField, int MEM[]) {
     
     int address = reg[A] + conBi_to_Int(offsetField);
     MEM[address] = reg[B];
+    PC++;
 }
 
 // halt: Set the halted flag and increment PC
