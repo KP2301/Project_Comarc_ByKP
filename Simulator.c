@@ -17,13 +17,14 @@ int reg[8] = {0,0,0,0,0,0,0,0};
 int MAX_PC = 0;
 int PC = 0;
 int move = 0;
-
+int instruction = 0;
 char Opcode[4]; 
 char regA[4];
 char regB[4];
 char rd[4];
 char offset[17] = {"0"};
 char* binary[MAXLINELENGTH];
+
 typedef struct stateStruct {
     int pc;
     int mem[NUMMEMORY];
@@ -31,7 +32,7 @@ typedef struct stateStruct {
     int numMemory;
 } stateType;
 
-void printState(stateType *);
+void printState(stateType *statePtr, FILE *outfilePtr);
 
 void RTYPE(){
     int pos = 10;
@@ -72,14 +73,15 @@ int main(int argc, char *argv[])
 {
     char line[MAXLINELENGTH];
     stateType state;
-    FILE *filePtr;
+    FILE *filePtr, *outfilePtr;
 
-    if (argc != 2) {
-	printf("error: usage: %s <machine-code file>\n", argv[0]);
-	exit(1);
-    }
+    // if (argc != 2) {
+	// printf("error: usage: %s <machine-code file>\n", argv[0]);
+	// exit(1);
+    // }
 
     filePtr = fopen(argv[1], "r");
+    outfilePtr = fopen(argv[2],"w");
     if (filePtr == NULL) {
         printf("error: can't open file %s", argv[1]);
         perror("fopen");
@@ -101,7 +103,9 @@ int main(int argc, char *argv[])
     for(int i = 0; i < 8; i++){
         state.reg[i] = reg[i];
     }
-    printState(&state);
+    printState(&state,outfilePtr);
+
+    MAX_PC = state.numMemory;
 
     while(PC < state.numMemory){
             state.pc = PC;
@@ -116,7 +120,6 @@ int main(int argc, char *argv[])
             // Opcode[0] = binary[PC][7]; // Bit 24:  7 = 31-24
             Opcode[4] = '\0';
 
-            // printf("%s\n",binary[state.pc]);
             if(!strcmp(Opcode, "000")){
                 // add
                 RTYPE();
@@ -141,10 +144,13 @@ int main(int argc, char *argv[])
                 // jalr
                 JTYPE();
                 jalr(regA,regB);
-                continue;
+                // continue;
             }else if(!strcmp(Opcode, "110")){
                 // halt
                 halt();
+                printf("machine halted\ntotal of %d instructions executed\nfinal state of machine:\n", instruction);
+                // state.pc = PC;
+                printState(&state,outfilePtr);
                 break;
             }else if(!strcmp(Opcode, "111")){
                 // noop
@@ -153,28 +159,36 @@ int main(int argc, char *argv[])
             // if(!move){  // for testing
             //     PC++;  
             // }
+            // state.pc = PC;
             for(int i = 0; i < 8; i++){
                 state.reg[i] = reg[i];
             }
-            printState(&state);
+            state.numMemory = MAX_PC;
+            printState(&state,outfilePtr);
     }
 
 
     return(0);
 }
 
-void printState(stateType *statePtr)
+void printState(stateType *statePtr, FILE *outfilePtr)
 {
     int i;
     printf("\n@@@\nstate:\n");
+    fprintf(outfilePtr, "\n@@@\nstate:\n");
     printf("\tpc %d\n", statePtr->pc);
+    fprintf(outfilePtr, "\tpc %d\n", statePtr->pc);
     printf("\tmemory:\n");
 	for (i=0; i<statePtr->numMemory; i++) {
 	    printf("\t\tmem[ %d ] %d\n", i, statePtr->mem[i]);
+        fprintf(outfilePtr, "\t\tmem[ %d ] %d\n", i, statePtr->mem[i]);
 	}
     printf("\tregisters:\n");
+    fprintf(outfilePtr, "\tregisters:\n");
 	for (i=0; i<NUMREGS; i++) {
 	    printf("\t\treg[ %d ] %d\n", i, statePtr->reg[i]);
+        fprintf(outfilePtr, "\t\treg[ %d ] %d\n", i, statePtr->reg[i]);
 	}
     printf("end state\n");
+     fprintf(outfilePtr, "end state\n");
 }

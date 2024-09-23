@@ -5,6 +5,7 @@
 #include "Global.h"
 
 // gcc -o Behave Behave.c 
+int stackpointer = 7;
 
 int conString_base10_to_Int(char* string){
     return strtol(string, NULL, 10);
@@ -64,7 +65,14 @@ void add(char *regA, char *regB, char* destReg){
     int B = conBi_to_IntReg(regB);
     int dest = conBi_to_IntReg(destReg);
     reg[dest] = reg[A] + reg[B];
+    if(A == stackpointer){
+        MAX_PC += reg[B];
+    }
+    if(B == stackpointer){
+        MAX_PC += reg[A];
+    }
     PC++;
+    instruction++;
 }
 
 void nand(char *regA, char *regB,char* destReg){
@@ -74,6 +82,7 @@ void nand(char *regA, char *regB,char* destReg){
     reg[dest] = ~(reg[A] & reg[B]) & 0xF; // To avoid the higher num and 2 com.
     //0xF is 4 bits for 8 is FF, and 16 is FFF 
     PC++;
+    instruction++;
 }
 
 void jalr(char* regA, char* regB){
@@ -87,6 +96,7 @@ void jalr(char* regA, char* regB){
         reg[B] = Next_PC;
         PC = reg[A];
     }
+    instruction++;
     // move = 1;
 }
 
@@ -102,6 +112,7 @@ void beq(char* regA, char* regB, char* offsetField){
     }else{
         PC++;
     }
+    instruction++;
 }
 
 // lw: Load word from memory into a register
@@ -115,6 +126,7 @@ void lw(char* regA, char* regB, char* offsetField, int MEM[]){
     int address = reg[A] + conBi_to_Int(offsetField);
     reg[B] = MEM[address];
     PC++;
+    instruction++;
 }
 
 // sw: Store word from a register into memory
@@ -129,16 +141,19 @@ void sw(char *regA, char *regB, char *offsetField, int MEM[]) {
     int address = reg[A] + conBi_to_Int(offsetField);
     MEM[address] = reg[B];
     PC++;
+    instruction++;
 }
 
 // halt: Set the halted flag and increment PC
 void halt() {
     PC++;
+    instruction++;
 }
 
 // no-op: Increment PC without changing other state
 void noop() {
     PC++;
+    instruction++;
 }
 
 char* conOffset(char* opcode, char* arg2)
