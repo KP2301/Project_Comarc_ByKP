@@ -79,8 +79,7 @@ void nand(char *regA, char *regB,char* destReg){
     int A = conBi_to_IntReg(regA);
     int B = conBi_to_IntReg(regB);
     int dest = conBi_to_IntReg(destReg);
-    reg[dest] = ~(reg[A] & reg[B]) & 0xF; // To avoid the higher num and 2 com.
-    //0xF is 4 bits for 8 is FF, and 16 is FFF 
+    reg[dest] = ~(reg[A] & reg[B]); 
     PC++;
     instruction++;
 }
@@ -97,7 +96,6 @@ void jalr(char* regA, char* regB){
         PC = reg[A];
     }
     instruction++;
-    // move = 1;
 }
 
 void beq(char* regA, char* regB, char* offsetField){

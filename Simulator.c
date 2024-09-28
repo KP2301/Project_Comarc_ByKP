@@ -1,7 +1,8 @@
 /* instruction-level simulator */
 
 // gcc -o Simulator Simulator.c Behave.c
-// ./Simulator machine_code.txt
+// ./Simulator machine_code.txt 
+// if run for test use ./Simulator machine_code.txt Out.txt
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -53,7 +54,7 @@ void ITYPE(){
         pos++;
     }
     int posoff = 0;
-    for(int j = 17; j < 32; j++){
+    for(int j = 16; j < 32; j++){
         offset[posoff] = binary[PC][j];
         posoff++;
     }
@@ -73,7 +74,7 @@ int main(int argc, char *argv[])
 {
     char line[MAXLINELENGTH];
     stateType state;
-    FILE *filePtr, *outfilePtr;
+    FILE *filePtr, *outfilePtr; // outfilePtr for testing
 
     // if (argc != 2) {
 	// printf("error: usage: %s <machine-code file>\n", argv[0]);
@@ -81,7 +82,7 @@ int main(int argc, char *argv[])
     // }
 
     filePtr = fopen(argv[1], "r");
-    outfilePtr = fopen(argv[2],"w");
+    outfilePtr = fopen(argv[2],"w"); // for testing
     if (filePtr == NULL) {
         printf("error: can't open file %s", argv[1]);
         perror("fopen");
@@ -144,22 +145,18 @@ int main(int argc, char *argv[])
                 // jalr
                 JTYPE();
                 jalr(regA,regB);
-                // continue;
             }else if(!strcmp(Opcode, "110")){
                 // halt
                 halt();
                 printf("machine halted\ntotal of %d instructions executed\nfinal state of machine:\n", instruction);
-                // state.pc = PC;
+                // state.pc = PC; // follow master
                 printState(&state,outfilePtr);
                 break;
             }else if(!strcmp(Opcode, "111")){
                 // noop
                 noop();
             }
-            // if(!move){  // for testing
-            //     PC++;  
-            // }
-            // state.pc = PC;
+            // state.pc = PC; // follow master
             for(int i = 0; i < 8; i++){
                 state.reg[i] = reg[i];
             }
@@ -175,20 +172,20 @@ void printState(stateType *statePtr, FILE *outfilePtr)
 {
     int i;
     printf("\n@@@\nstate:\n");
-    fprintf(outfilePtr, "\n@@@\nstate:\n");
+    fprintf(outfilePtr, "\n@@@\nstate:\n"); // for testing
     printf("\tpc %d\n", statePtr->pc);
-    fprintf(outfilePtr, "\tpc %d\n", statePtr->pc);
+    fprintf(outfilePtr, "\tpc %d\n", statePtr->pc);// for testing
     printf("\tmemory:\n");
 	for (i=0; i<statePtr->numMemory; i++) {
 	    printf("\t\tmem[ %d ] %d\n", i, statePtr->mem[i]);
-        fprintf(outfilePtr, "\t\tmem[ %d ] %d\n", i, statePtr->mem[i]);
+        fprintf(outfilePtr, "\t\tmem[ %d ] %d\n", i, statePtr->mem[i]);// for testing
 	}
     printf("\tregisters:\n");
-    fprintf(outfilePtr, "\tregisters:\n");
+    fprintf(outfilePtr, "\tregisters:\n");// for testing
 	for (i=0; i<NUMREGS; i++) {
 	    printf("\t\treg[ %d ] %d\n", i, statePtr->reg[i]);
-        fprintf(outfilePtr, "\t\treg[ %d ] %d\n", i, statePtr->reg[i]);
+        fprintf(outfilePtr, "\t\treg[ %d ] %d\n", i, statePtr->reg[i]);// for testing
 	}
     printf("end state\n");
-     fprintf(outfilePtr, "end state\n");
+     fprintf(outfilePtr, "end state\n");// for testing
 }
